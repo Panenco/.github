@@ -1,0 +1,6 @@
+{
+  "name": "Claude PR Review",
+  "description": "Automated multi-stage PR review using Claude Code (Opus + Sonnet). Catches bugs, spec mismatches, security issues, and runs functional E2E tests.",
+  "iconName": "eye",
+  "categories": ["Code review", "Continuous integration"]
+}
