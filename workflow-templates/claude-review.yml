@@ -2,15 +2,27 @@ name: Claude PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_target: # warms Playwright cache in main scope
   workflow_dispatch:
     inputs:
       pr_number:
         description: 'PR number to review'
         required: true
         type: string
+
+concurrency:
+  group: claude-review-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   review:
-    uses: panenco/claude-review/.github/workflows/pr-review.yml@v1
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    uses: panenco/claude-review/.github/workflows/pr-review.yml@v2
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
     with:
       pr_number: ${{ inputs.pr_number || '' }}
     secrets: inherit
