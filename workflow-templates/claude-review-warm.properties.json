@@ -1,0 +1,9 @@
+{
+  "name": "Claude Review Cache Warm",
+  "description": "Warms the Claude PR Review caches (package store, browser stack, optional dev-env build cache) from a trigger that can write the default branch's cache scope. Pair with the Claude PR Review template.",
+  "iconName": "database",
+  "categories": [
+    "Code review",
+    "Continuous integration"
+  ]
+}
