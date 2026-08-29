@@ -1,0 +1,45 @@
+name: Claude Review Cache Warm
+
+# Producer half of the review cache. The review job only restores; this writes.
+#
+# It must be its own workflow: GitHub grants write access to the default
+# branch's cache scope only to push / workflow_dispatch / repository_dispatch /
+# schedule (+ delete, registry_package, page_build). pull_request_target and
+# issue_comment are read-only, and a reusable workflow inherits the CALLER's
+# event — so a warm sharing the review caller's triggers can never write.
+# A refused save is only a warning, so it fails silently. See
+# panenco/claude-review#101.
+#
+# Delete this file if the repo does not use `/review functional`.
+on:
+  push:
+    branches: [main] # your default branch
+    paths:
+      - '**/pnpm-lock.yaml'
+      - '**/package-lock.json'
+      # + every dev_cache_key_files glob you wire below
+  schedule:
+    - cron: '0 5 * * 1' # covers the 7-day idle eviction on a quiet week
+  workflow_dispatch:
+
+concurrency:
+  group: claude-review-warm
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    uses: panenco/claude-review/.github/workflows/warm-cache.yml@v3
+    permissions:
+      contents: read
+    with:
+      # MUST match the review caller's `runner` — cache keys are scoped by
+      # OS+arch, so a mismatch means every review still runs cold.
+      # Public repos MUST set ubuntu-latest.
+      runner: panenco-claude-review
+      # Optional, and only if the review caller sets them too — same values.
+      # dev_cache_paths: |
+      #   ~/.gradle/caches/modules-2
+      # dev_cache_key_files: |
+      #   **/gradle/libs.versions.toml
+      # dev_cache_key_prefix: gradle
+      # dev_cache_warm_command: ./gradlew :api:dependencies --no-daemon
